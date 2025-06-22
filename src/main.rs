@@ -1,7 +1,7 @@
 use std::env;
 
-use simple_tree::implementations::binary_unbalanced::NodeBinaryUnbalanced;
-use simple_tree::node::Node;
+use simple_tree::implementations::NodeBinaryUnbalanced;
+use simple_tree::Node;
 
 fn main() {
     let mut nums = env::args()
