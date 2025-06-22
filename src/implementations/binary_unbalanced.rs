@@ -28,7 +28,7 @@ where
     ///
     /// let root = NodeBinaryUnbalanced::new("foo");
     ///
-    /// assert_eq!(root.value(), &"foo");
+    /// assert_eq!(format!("{}", root.value()), "foo");
     /// assert_eq!(root.count_children(), 0);
     /// ```
     pub fn new(value: T) -> Self {
@@ -91,7 +91,7 @@ where
     }
 }
 
-impl<T> Node<T> for NodeBinaryUnbalanced<T>
+impl<T> Node for NodeBinaryUnbalanced<T>
 where
     T: fmt::Display + Ord,
 {
@@ -105,10 +105,10 @@ where
     ///
     /// let root = NodeBinaryUnbalanced::new("hello");
     ///
-    /// assert_eq!(root.value(), &"hello");
+    /// assert_eq!(format!("{}", root.value()), "hello");
     /// assert_eq!(root.children().count(), 0);
     /// ```
-    fn value(&self) -> &T {
+    fn value(&self) -> impl fmt::Display {
         &self.val
     }
 
@@ -127,8 +127,8 @@ where
     /// root.insert(75);
     ///
     /// let mut children = root.children();
-    /// assert_eq!(children.next().unwrap().value(), &25);
-    /// assert_eq!(children.next().unwrap().value(), &100);
+    /// assert_eq!(format!("{}", children.next().unwrap().value()), "25");
+    /// assert_eq!(format!("{}", children.next().unwrap().value()), "100");
     /// assert_eq!(children.next().is_none(), true);
     /// ```
     fn children(&self) -> impl Iterator<Item = &Self> {

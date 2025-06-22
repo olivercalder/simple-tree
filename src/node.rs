@@ -8,10 +8,7 @@ enum SpecialStatus {
 }
 
 /// [Node] defines common methods for nodes in a displayable tree.
-pub trait Node<T>
-where
-    T: fmt::Display,
-{
+pub trait Node {
     /// Returns the displayable value represented by this node.
     ///
     /// # Examples
@@ -22,9 +19,9 @@ where
     ///
     /// let root = NodeBinaryUnbalanced::new("hello world!");
     ///
-    /// assert_eq!(root.value(), &"hello world!");
+    /// assert_eq!(format!("{}", root.value()), "hello world!");
     /// ```
-    fn value(&self) -> &T;
+    fn value(&self) -> impl fmt::Display;
 
     /// Returns an iterator over the children of this node. Children of those children must not be
     /// included.
@@ -41,8 +38,8 @@ where
     /// root.insert(75);
     ///
     /// let mut children = root.children();
-    /// assert_eq!(children.next().unwrap().value(), &25);
-    /// assert_eq!(children.next().unwrap().value(), &100);
+    /// assert_eq!(format!("{}", children.next().unwrap().value()), "25");
+    /// assert_eq!(format!("{}", children.next().unwrap().value()), "100");
     /// assert_eq!(children.next().is_none(), true);
     /// ```
     fn children(&self) -> impl Iterator<Item = &Self>;
