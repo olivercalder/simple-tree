@@ -10,10 +10,8 @@ enum SpecialStatus {
 /// Node defines common methods for different node implementations.
 pub trait Node<T>
 where
-    T: fmt::Display + Ord,
+    T: fmt::Display,
 {
-    fn new(value: T) -> Self;
-    fn insert(&mut self, value: T);
     fn value(&self) -> &T;
     fn children(&self) -> impl Iterator<Item = &Box<Self>>;
 

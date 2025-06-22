@@ -14,11 +14,11 @@ where
     right: Option<Box<NodeBinaryUnbalanced<T>>>,
 }
 
-impl<T> Node<T> for NodeBinaryUnbalanced<T>
+impl<T> NodeBinaryUnbalanced<T>
 where
     T: fmt::Display + Ord,
 {
-    fn new(value: T) -> Self {
+    pub fn new(value: T) -> Self {
         NodeBinaryUnbalanced {
             val: value,
             count: 1,
@@ -27,7 +27,7 @@ where
         }
     }
 
-    fn insert(&mut self, value: T) {
+    pub fn insert(&mut self, value: T) {
         match value.cmp(&self.val) {
             Ordering::Less => {
                 if let Some(left) = &mut self.left {
@@ -46,7 +46,12 @@ where
             }
         }
     }
+}
 
+impl<T> Node<T> for NodeBinaryUnbalanced<T>
+where
+    T: fmt::Display + Ord,
+{
     fn value(&self) -> &T {
         &self.val
     }
