@@ -14,10 +14,13 @@ enum SpecialStatus {
 }
 
 /// Node defines common methods for different node implementations.
-trait Node {
-    fn new(value: i32) -> Self;
-    fn insert(&mut self, value: i32);
-    fn value(&self) -> i32;
+trait Node<T>
+where
+    T: fmt::Display + Ord,
+{
+    fn new(value: T) -> Self;
+    fn insert(&mut self, value: T);
+    fn value(&self) -> &T;
     fn children(&self) -> impl Iterator<Item = &Box<Self>>;
 
     fn count_children(&self) -> usize {
@@ -64,15 +67,21 @@ trait Node {
 }
 
 #[derive(Debug)]
-struct NodeBinaryUnbalanced {
-    val: i32,
+struct NodeBinaryUnbalanced<T>
+where
+    T: fmt::Display + Ord,
+{
+    val: T,
     count: usize,
-    left: Option<Box<NodeBinaryUnbalanced>>,
-    right: Option<Box<NodeBinaryUnbalanced>>,
+    left: Option<Box<NodeBinaryUnbalanced<T>>>,
+    right: Option<Box<NodeBinaryUnbalanced<T>>>,
 }
 
-impl Node for NodeBinaryUnbalanced {
-    fn new(value: i32) -> Self {
+impl<T> Node<T> for NodeBinaryUnbalanced<T>
+where
+    T: fmt::Display + Ord,
+{
+    fn new(value: T) -> Self {
         NodeBinaryUnbalanced {
             val: value,
             count: 1,
@@ -81,7 +90,7 @@ impl Node for NodeBinaryUnbalanced {
         }
     }
 
-    fn insert(&mut self, value: i32) {
+    fn insert(&mut self, value: T) {
         match value.cmp(&self.val) {
             Ordering::Less => {
                 if let Some(left) = &mut self.left {
@@ -101,8 +110,8 @@ impl Node for NodeBinaryUnbalanced {
         }
     }
 
-    fn value(&self) -> i32 {
-        self.val
+    fn value(&self) -> &T {
+        &self.val
     }
 
     fn children(&self) -> impl Iterator<Item = &Box<Self>> {
@@ -117,7 +126,10 @@ impl Node for NodeBinaryUnbalanced {
     }
 }
 
-impl fmt::Display for NodeBinaryUnbalanced {
+impl<T> fmt::Display for NodeBinaryUnbalanced<T>
+where
+    T: fmt::Display + Ord,
+{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         Node::fmt(self, f)
     }
