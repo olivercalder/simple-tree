@@ -131,13 +131,13 @@ where
     /// assert_eq!(children.next().unwrap().value(), &100);
     /// assert_eq!(children.next().is_none(), true);
     /// ```
-    fn children(&self) -> impl Iterator<Item = &Box<Self>> {
+    fn children(&self) -> impl Iterator<Item = &Self> {
         let mut ch = Vec::new();
         if let Some(left) = &self.left {
-            ch.push(left);
+            ch.push(left.as_ref());
         }
         if let Some(right) = &self.right {
-            ch.push(right);
+            ch.push(right.as_ref());
         }
         ch.into_iter()
     }

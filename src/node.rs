@@ -45,7 +45,7 @@ where
     /// assert_eq!(children.next().unwrap().value(), &100);
     /// assert_eq!(children.next().is_none(), true);
     /// ```
-    fn children(&self) -> impl Iterator<Item = &Box<Self>>;
+    fn children(&self) -> impl Iterator<Item = &Self>;
 
     /// Returns the number of direct children of this node.
     ///
