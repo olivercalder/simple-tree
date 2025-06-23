@@ -40,7 +40,7 @@ pub trait Node {
     /// let mut children = root.children();
     /// assert_eq!(format!("{}", children.next().unwrap().value()), "25");
     /// assert_eq!(format!("{}", children.next().unwrap().value()), "100");
-    /// assert_eq!(children.next().is_none(), true);
+    /// assert!(children.next().is_none());
     /// ```
     fn children(&self) -> impl Iterator<Item = &Self>;
 

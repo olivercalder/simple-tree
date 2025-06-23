@@ -5,4 +5,5 @@
 pub mod implementations;
 pub mod node;
 
+pub use implementations::DirTree;
 pub use node::Node;
