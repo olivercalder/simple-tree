@@ -1,21 +1,18 @@
 use std::env;
 
-use simple_tree::implementations::NodeBinaryUnbalanced;
-use simple_tree::Node;
+use simple_tree::DirTree;
 
 fn main() {
-    let mut nums = env::args()
-        .skip(1)
-        .map(|n| n.parse::<i32>().expect("Arguments must be integers"));
-    let Some(first) = nums.next() else { return };
-    let mut root = NodeBinaryUnbalanced::new(first);
-    for num in nums {
-        root.insert(num)
+    let mut was_arg = false;
+    for root in env::args().skip(1) {
+        was_arg = true;
+
+        let tree = DirTree::new(root).unwrap();
+        println!("{}", tree);
     }
 
-    println!("{}", root);
-    println!(
-        "Number of descendents from root: {}",
-        root.count_descendents()
-    );
+    if !was_arg {
+        let tree = DirTree::new(".").unwrap();
+        println!("{}", tree);
+    }
 }
