@@ -70,8 +70,8 @@ impl DirTree {
     /// // Clean up the directory we created for this test.
     /// fs::remove_dir_all(&tmpdir).unwrap();
     ///
-    /// assert_eq!(format!("{}", root), format!("
-    /// {}{}foo
+    /// assert_eq!(format!("{}", root), format!(
+    /// "{}{}foo
     /// ├── bar
     /// │   ├── a
     /// │   ├── b -> {}

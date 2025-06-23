@@ -61,8 +61,8 @@ where
     /// root.insert(11);
     /// root.insert(15);
     ///
-    /// assert_eq!(format!("{}", root), "
-    /// 7
+    /// assert_eq!(format!("{}", root),
+    /// "7
     /// ├── 3
     /// │   ├── 2
     /// │   └── 5

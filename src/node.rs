@@ -105,8 +105,8 @@ pub trait Node {
     /// root.insert(11);
     /// root.insert(15);
     ///
-    /// assert_eq!(format!("{}", root), "
-    /// 7
+    /// assert_eq!(format!("{}", root),
+    /// "7
     /// ├── 3
     /// │   ├── 2
     /// │   └── 5
@@ -115,7 +115,7 @@ pub trait Node {
     ///     └── 15");
     /// ```
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut prefixes = vec!["\n"];
+        let mut prefixes = vec![];
         self.print_tree(f, &mut prefixes, SpecialStatus::Root)
     }
 
@@ -134,7 +134,7 @@ pub trait Node {
         }
         let (s_prefix, c_prefix) = match status {
             SpecialStatus::None => ("├── ", "│   "),
-            SpecialStatus::Root => ("", ""),
+            SpecialStatus::Root => ("", "\n"),
             SpecialStatus::LastChild => ("└── ", "    "),
         };
         write!(f, "{}{}", s_prefix, self.value())?;
