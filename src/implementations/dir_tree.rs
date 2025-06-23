@@ -41,11 +41,14 @@ impl DirTree {
     /// use simple_tree::implementations::DirTree;
     /// use simple_tree::Node;
     ///
-    /// let tmpdir = env::temp_dir();
-    /// let foo_path = env::temp_dir().join("foo");
+    /// let tmpdir = env::temp_dir().join("test-dir-tree-new");
+    /// fs::create_dir(&tmpdir).unwrap();
+    ///
+    /// let foo_path = tmpdir.join("foo");
+    /// fs::create_dir(&foo_path).unwrap();
+    ///
     /// let bar_path = foo_path.join("bar");
     /// let baz_path = foo_path.join("baz");
-    /// fs::create_dir(&foo_path).unwrap();
     /// fs::create_dir(&bar_path).unwrap();
     /// fs::create_dir(&baz_path).unwrap();
     ///
@@ -62,15 +65,19 @@ impl DirTree {
     /// fs::write(&c_path, "stuff").unwrap();
     ///
     /// let mut root = DirTree::new(&foo_path).unwrap();
+    ///
+    /// // The filesystem is not read again after `DirTree::new()` returns.
+    /// // Clean up the directory we created for this test.
+    /// fs::remove_dir_all(&tmpdir).unwrap();
+    ///
     /// assert_eq!(format!("{}", root), format!("
     /// {}{}foo
     /// ├── bar
     /// │   ├── a
     /// │   ├── b -> {}
     /// │   └── c
-    /// └── baz", tmpdir.display(), MAIN_SEPARATOR, tmpdir.display())
+    /// └── baz",tmpdir.display(), MAIN_SEPARATOR, tmpdir.display())
     /// );
-    /// fs::remove_dir_all(&foo_path).unwrap();
     /// ```
     pub fn new<P>(path: P) -> io::Result<Self>
     where
@@ -124,7 +131,8 @@ impl Node for DirTree {
     ///     use simple_tree::implementations::DirTree;
     ///     use simple_tree::Node;
     ///
-    ///     let parent = env::temp_dir();
+    ///     let tmpdir = env::temp_dir().join("test-dir-tree-value");
+    ///     fs::create_dir(&tmpdir).unwrap();
     ///
     ///     // Here, the values 0x66 and 0x6f correspond to 'f' and 'o'
     ///     // respectively. The value 0x80 is a lone continuation byte, invalid
@@ -132,24 +140,23 @@ impl Node for DirTree {
     ///     let source = [0x66, 0x6f, 0x80, 0x6f];
     ///     let os_str = OsStr::from_bytes(&source[..]);
     ///
-    ///     let path = parent.join(os_str);
-    ///
-    ///     // Create path in temp directory for the sake of this test
+    ///     let path = tmpdir.join(os_str);
     ///     fs::create_dir(&path).unwrap();
     ///
     ///     let mut root = DirTree::new(&path).unwrap();
+    ///
+    ///     // Clean up the directory we created for this test
+    ///     fs::remove_dir_all(&tmpdir).unwrap();
+    ///
     ///     assert_eq!(
     ///         format!("{}", root.value()),
     ///         format!(
     ///             "{}{}{}",
-    ///             parent.display(),
+    ///             tmpdir.display(),
     ///             MAIN_SEPARATOR,
     ///             "fo�o"
     ///         )
     ///     );
-    ///
-    ///     // Clean up the directory we created
-    ///     fs::remove_dir(&path).unwrap();
     /// }
     /// #[cfg(windows)] {
     ///     use std::env;
@@ -160,7 +167,8 @@ impl Node for DirTree {
     ///     use simple_tree::implementations::DirTree;
     ///     use simple_tree::Node;
     ///
-    ///     let parent = env::temp_dir();
+    ///     let tmpdir = env::temp_dir().join("test-dir-tree-value");
+    ///     fs::create_dir(&tmpdir).unwrap();
     ///
     ///     // Here the values 0x0066 and 0x006f correspond to 'f' and 'o'
     ///     // respectively. The value 0xD800 is a lone surrogate half, invalid
@@ -169,12 +177,14 @@ impl Node for DirTree {
     ///     let os_string = OsString::from_wide(&source[..]);
     ///     let os_str = os_string.as_os_str();
     ///
-    ///     let path = parent.join(os_str);
-    ///
-    ///     // Create path in temp directory for the sake of this test
+    ///     let path = tmpdir.join(os_str);
     ///     fs::create_dir(&path).unwrap();
     ///
     ///     let mut root = DirTree::new(&path).unwrap();
+    ///
+    ///     // Clean up the directory we created for this test
+    ///     fs::remove_dir_all(&tmpdir).unwrap();
+    ///
     ///     assert_eq!(
     ///         format!("{}", root.value()),
     ///         format!(
@@ -184,9 +194,6 @@ impl Node for DirTree {
     ///             "fo�o"
     ///         )
     ///     );
-    ///
-    ///     // Clean up the directory we created
-    ///     fs::remove_dir(&path).unwrap();
     /// }
     /// ```
     fn value(&self) -> impl fmt::Display {
@@ -226,8 +233,10 @@ impl Node for DirTree {
     /// use simple_tree::implementations::DirTree;
     /// use simple_tree::Node;
     ///
-    /// let tmpdir = env::temp_dir();
-    /// let foo_path = env::temp_dir().join("foo");
+    /// let tmpdir = env::temp_dir().join("test-dir-tree-children");
+    /// fs::create_dir(&tmpdir).unwrap();
+    ///
+    /// let foo_path = tmpdir.join("foo");
     /// fs::create_dir(&foo_path).unwrap();
     ///
     /// let bar_path = foo_path.join("bar");
@@ -241,7 +250,8 @@ impl Node for DirTree {
     /// let mut root = DirTree::new(&foo_path).unwrap();
     ///
     /// // The filesystem is not read again after `DirTree::new()` returns.
-    /// fs::remove_dir_all(&foo_path).unwrap();
+    /// // Clean up the directory we created for this test.
+    /// fs::remove_dir_all(&tmpdir).unwrap();
     ///
     /// let mut children = root.children();
     /// assert_eq!(format!("{}", children.next().unwrap().value()), "bar");
