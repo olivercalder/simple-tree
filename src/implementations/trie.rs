@@ -61,34 +61,42 @@ impl Trie {
         word.chars().nth(self.fragment.len())
     }
 
-    /// Returns the [Trie] node corresponding to the next `char` in the given word following
-    /// `self.fragment`, if there is a next letter and the corresponding node exists.
-    fn next_node(&self, word: &str) -> Option<&Trie> {
-        self.children.get(&self.next_char(word)?)
+    /// Returns an iterator over the potential next characters mapping to children of this [Trie]
+    /// node.
+    fn options(&self) -> impl Iterator<Item = &char> {
+        self.children.keys()
     }
 
-    /// Returns the [Trie] node corresponding to the next `char` in the given word following
-    /// `self.fragment`, if there is a next letter and the corresponding node exists.
-    fn next_node_mut(&mut self, word: &str) -> Option<&mut Trie> {
-        self.children.get_mut(&self.next_char(word)?)
+    /// Returns a reference to the child [Trie] node corresponding to the given `char`, if it
+    /// exists.
+    fn get(&self, ch: char) -> Option<&Trie> {
+        self.children.get(&ch)
+    }
+
+    /// Returns a mutable reference to the child [Trie] node corresponding to the given `char`, if
+    /// it exists.
+    fn get_mut(&mut self, ch: char) -> Option<&mut Trie> {
+        self.children.get_mut(&ch)
     }
 
     /// Returns a reference to the [Trie] node corresponding to the given word fragment, if it
     /// exists in the (sub)trie rooted at `self`.
-    fn get(&self, fragment: &str) -> Option<&Trie> {
-        if fragment == self.fragment {
+    fn find(&self, remaining: &str) -> Option<&Trie> {
+        if remaining.is_empty() {
             return Some(self);
         }
-        self.next_node(fragment)?.get(fragment)
+        let (first, rest) = first_rest(remaining)?;
+        self.get(first)?.find(rest)
     }
 
     /// Returns a mutable reference to the [Trie] node corresponding to the given word fragment, if
     /// it exists in the (sub)trie rooted at `self`.
-    fn get_mut(&mut self, fragment: &str) -> Option<&mut Trie> {
-        if fragment == self.fragment {
+    fn find_mut(&mut self, remaining: &str) -> Option<&mut Trie> {
+        if remaining.is_empty() {
             return Some(self);
         }
-        self.next_node_mut(fragment)?.get_mut(fragment)
+        let (first, rest) = first_rest(remaining)?;
+        self.get_mut(first)?.find_mut(rest)
     }
 
     /// Returns the number of times the given word has been added to the [Trie].
@@ -110,7 +118,7 @@ impl Trie {
     /// assert_eq!(trie.occurrences("ba"), 0);
     /// ```
     pub fn occurrences(&self, word: &str) -> usize {
-        self.get(word).map_or(0, |n| n.count)
+        self.find(word).map_or(0, |n| n.count)
     }
 
     /// Returns the total number of times this node or any descendent of it has been added to the
@@ -143,13 +151,6 @@ impl Trie {
     /// ```
     pub fn total_occurrences(&self) -> usize {
         self.descendents_count
-    }
-
-    /// Returns an iterator over the potential next characters following the given word fragment
-    /// which are currently present in the [Trie].
-    pub fn next_chars(&self, fragment: &str) -> impl Iterator<Item = &char> {
-        self.get(fragment)
-            .map_or_else(Default::default, |n| n.children.keys())
     }
 
     /// Adds the given word to the [Trie] and returns the total number of times it now occurs.
@@ -266,4 +267,14 @@ impl Default for Trie {
     fn default() -> Self {
         Self::new()
     }
+}
+
+/// Splits the given word fragment into the first `char` and the remaining string.
+///
+/// Returns `None` if the given string is empty.
+fn first_rest(fragment: &str) -> Option<(char, &str)> {
+    let mut ch_ind_iter = fragment.char_indices();
+    let (_, first) = ch_ind_iter.next()?;
+    let rest = ch_ind_iter.as_str();
+    Some((first, rest))
 }
