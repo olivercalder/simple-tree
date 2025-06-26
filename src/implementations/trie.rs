@@ -8,6 +8,8 @@ pub struct Trie {
     fragment: String,
     // The number of times exactly this word has occurred.
     count: usize,
+    // The number of times this node or any descendent of this node has occurred.
+    descendents_count: usize,
     // The nodes of other words which begin with this node's fragment.
     children: BTreeMap<char, Trie>,
 }
@@ -23,6 +25,7 @@ impl Trie {
         Trie {
             fragment,
             count: 0,
+            descendents_count: 0,
             children: BTreeMap::new(),
         }
     }
@@ -110,6 +113,38 @@ impl Trie {
         self.get(word).map_or(0, |n| n.count)
     }
 
+    /// Returns the total number of times this node or any descendent of it has been added to the
+    /// [Trie].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use simple_tree::implementations::Trie;
+    /// use simple_tree::Node;
+    ///
+    /// let mut trie = Trie::new();
+    ///
+    /// assert_eq!(trie.add(String::from("hey")), Ok(1));
+    /// assert_eq!(trie.add(String::from("hello")), Ok(1));
+    /// assert_eq!(trie.add(String::from("he")), Ok(1));
+    /// assert_eq!(trie.add(String::from("hi")), Ok(1));
+    /// assert_eq!(trie.add(String::from("hello")), Ok(2));
+    ///
+    /// assert_eq!(trie.total_occurrences(), 5);
+    ///
+    /// let h_node = trie.children().next().unwrap();
+    /// assert_eq!(h_node.total_occurrences(), 5);
+    ///
+    /// let he_node = h_node.children().next().unwrap();
+    /// assert_eq!(he_node.total_occurrences(), 4);
+    ///
+    /// let hel_node = he_node.children().next().unwrap();
+    /// assert_eq!(hel_node.total_occurrences(), 2);
+    /// ```
+    pub fn total_occurrences(&self) -> usize {
+        self.descendents_count
+    }
+
     /// Returns an iterator over the potential next characters following the given word fragment
     /// which are currently present in the [Trie].
     pub fn next_chars(&self, fragment: &str) -> impl Iterator<Item = &char> {
@@ -149,6 +184,7 @@ impl Trie {
         if !word.starts_with(&self.fragment) {
             return Err("cannot add word to node with incompatible prefix");
         }
+        self.descendents_count += 1;
         let Some(next_char) = self.next_char(&word) else {
             self.count += 1;
             return Ok(self.count);
