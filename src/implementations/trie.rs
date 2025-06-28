@@ -88,13 +88,13 @@ impl Trie {
     /// let trie = Trie::from(vec!["foo", "bar", "baz", "foo", "baz", "foo", "b"]);
     ///
     /// assert_eq!(format!("{}", trie), "
-    /// ├── b\t1
-    /// │   └── ba\t0
-    /// │       ├── bar\t1
-    /// │       └── baz\t2
-    /// └── f\t0
-    ///     └── fo\t0
-    ///         └── foo\t3");
+    /// ├── b 1
+    /// │   └── ba 0
+    /// │       ├── bar 1
+    /// │       └── baz 2
+    /// └── f 0
+    ///     └── fo 0
+    ///         └── foo 3");
     /// ```
     pub fn from<'a>(words: impl IntoIterator<Item = &'a str>) -> Self {
         Self::new().populate(words)
@@ -112,13 +112,13 @@ impl Trie {
     /// let trie = Trie::from_with_sort_and_display(vec!["foo", "bar", "baz", "foo", "baz", "foo", "b"], SortOption::TotalCountDescending, DisplayData::TotalCount);
     ///
     /// assert_eq!(format!("{}", trie), "
-    /// ├── b\t4
-    /// │   └── ba\t3
-    /// │       ├── baz\t2
-    /// │       └── bar\t1
-    /// └── f\t3
-    ///     └── fo\t3
-    ///         └── foo\t3");
+    /// ├── b 4
+    /// │   └── ba 3
+    /// │       ├── baz 2
+    /// │       └── bar 1
+    /// └── f 3
+    ///     └── fo 3
+    ///         └── foo 3");
     /// ```
     pub fn from_with_sort_and_display<'a>(
         words: impl IntoIterator<Item = &'a str>,
@@ -151,69 +151,69 @@ impl Trie {
     ///     DisplayData::DirectCount,
     /// );
     /// assert_eq!(format!("{}", trie), "
-    /// └── h\t0
-    ///     ├── ha\t2
-    ///     ├── he\t0
-    ///     │   ├── hel\t0
-    ///     │   │   └── hell\t0
-    ///     │   │       └── hello\t1
-    ///     │   └── hey\t2
-    ///     └── hi\t1");
+    /// └── h 0
+    ///     ├── ha 2
+    ///     ├── he 0
+    ///     │   ├── hel 0
+    ///     │   │   └── hell 0
+    ///     │   │       └── hello 1
+    ///     │   └── hey 2
+    ///     └── hi 1");
     ///
     /// trie.set_sort_option(SortOption::ValueReversed);
     /// assert_eq!(format!("{}", trie), "
-    /// └── h\t0
-    ///     ├── hi\t1
-    ///     ├── he\t0
-    ///     │   ├── hey\t2
-    ///     │   └── hel\t0
-    ///     │       └── hell\t0
-    ///     │           └── hello\t1
-    ///     └── ha\t2");
+    /// └── h 0
+    ///     ├── hi 1
+    ///     ├── he 0
+    ///     │   ├── hey 2
+    ///     │   └── hel 0
+    ///     │       └── hell 0
+    ///     │           └── hello 1
+    ///     └── ha 2");
     ///
     /// trie.set_sort_option(SortOption::DirectCountAscending);
     /// assert_eq!(format!("{}", trie), "
-    /// └── h\t0
-    ///     ├── he\t0
-    ///     │   ├── hel\t0
-    ///     │   │   └── hell\t0
-    ///     │   │       └── hello\t1
-    ///     │   └── hey\t2
-    ///     ├── hi\t1
-    ///     └── ha\t2");
+    /// └── h 0
+    ///     ├── he 0
+    ///     │   ├── hel 0
+    ///     │   │   └── hell 0
+    ///     │   │       └── hello 1
+    ///     │   └── hey 2
+    ///     ├── hi 1
+    ///     └── ha 2");
     ///
     /// trie.set_sort_option(SortOption::DirectCountDescending);
     /// assert_eq!(format!("{}", trie), "
-    /// └── h\t0
-    ///     ├── ha\t2
-    ///     ├── hi\t1
-    ///     └── he\t0
-    ///         ├── hey\t2
-    ///         └── hel\t0
-    ///             └── hell\t0
-    ///                 └── hello\t1");
+    /// └── h 0
+    ///     ├── ha 2
+    ///     ├── hi 1
+    ///     └── he 0
+    ///         ├── hey 2
+    ///         └── hel 0
+    ///             └── hell 0
+    ///                 └── hello 1");
     ///
     /// trie.set_sort_option(SortOption::TotalCountAscending);
     /// assert_eq!(format!("{}", trie), "
-    /// └── h\t0
-    ///     ├── hi\t1
-    ///     ├── ha\t2
-    ///     └── he\t0
-    ///         ├── hel\t0
-    ///         │   └── hell\t0
-    ///         │       └── hello\t1
-    ///         └── hey\t2");
+    /// └── h 0
+    ///     ├── hi 1
+    ///     ├── ha 2
+    ///     └── he 0
+    ///         ├── hel 0
+    ///         │   └── hell 0
+    ///         │       └── hello 1
+    ///         └── hey 2");
     ///
     /// trie.set_sort_option(SortOption::TotalCountDescending);
     /// assert_eq!(format!("{}", trie), "
-    /// └── h\t0
-    ///     ├── he\t0
-    ///     │   ├── hey\t2
-    ///     │   └── hel\t0
-    ///     │       └── hell\t0
-    ///     │           └── hello\t1
-    ///     ├── ha\t2
-    ///     └── hi\t1");
+    /// └── h 0
+    ///     ├── he 0
+    ///     │   ├── hey 2
+    ///     │   └── hel 0
+    ///     │       └── hell 0
+    ///     │           └── hello 1
+    ///     ├── ha 2
+    ///     └── hi 1");
     /// ```
     pub fn set_sort_option(&mut self, sort_option: SortOption) {
         self.sort_option = sort_option;
@@ -248,25 +248,25 @@ impl Trie {
     ///
     /// trie.set_display_data(DisplayData::DirectCount);
     /// assert_eq!(format!("{}", trie), "
-    /// └── h\t0
-    ///     ├── ha\t2
-    ///     ├── he\t0
-    ///     │   ├── hel\t0
-    ///     │   │   └── hell\t0
-    ///     │   │       └── hello\t1
-    ///     │   └── hey\t2
-    ///     └── hi\t1");
+    /// └── h 0
+    ///     ├── ha 2
+    ///     ├── he 0
+    ///     │   ├── hel 0
+    ///     │   │   └── hell 0
+    ///     │   │       └── hello 1
+    ///     │   └── hey 2
+    ///     └── hi 1");
     ///
     /// trie.set_display_data(DisplayData::TotalCount);
     /// assert_eq!(format!("{}", trie), "
-    /// └── h\t6
-    ///     ├── ha\t2
-    ///     ├── he\t3
-    ///     │   ├── hel\t1
-    ///     │   │   └── hell\t1
-    ///     │   │       └── hello\t1
-    ///     │   └── hey\t2
-    ///     └── hi\t1");
+    /// └── h 6
+    ///     ├── ha 2
+    ///     ├── he 3
+    ///     │   ├── hel 1
+    ///     │   │   └── hell 1
+    ///     │   │       └── hello 1
+    ///     │   └── hey 2
+    ///     └── hi 1");
     /// ```
     pub fn set_display_data(&mut self, display_data: DisplayData) {
         self.display_data = display_data;
@@ -392,13 +392,13 @@ impl Trie {
     /// assert_eq!(trie.add(String::from("hi")), Ok(2));
     ///
     /// assert_eq!(format!("{}", trie), "
-    /// └── h\t0
-    ///     ├── he\t0
-    ///     │   ├── hel\t0
-    ///     │   │   └── hell\t0
-    ///     │   │       └── hello\t1
-    ///     │   └── hey\t1
-    ///     └── hi\t2")
+    /// └── h 0
+    ///     ├── he 0
+    ///     │   ├── hel 0
+    ///     │   │   └── hell 0
+    ///     │   │       └── hello 1
+    ///     │   └── hey 1
+    ///     └── hi 2")
     /// ```
     pub fn add(&mut self, word: String) -> Result<usize, &'static str> {
         if !word.starts_with(&self.fragment) {
@@ -439,13 +439,13 @@ impl Node for Trie {
     /// assert_eq!(format!("{}", root.value()), "");
     ///
     /// let b_node = root.children().next().unwrap();
-    /// assert_eq!(format!("{}", b_node.value()), "b\t0");
+    /// assert_eq!(format!("{}", b_node.value()), "b 0");
     ///
     /// let ba_node = b_node.children().next().unwrap();
-    /// assert_eq!(format!("{}", ba_node.value()), "ba\t0");
+    /// assert_eq!(format!("{}", ba_node.value()), "ba 0");
     ///
     /// let bar_node = ba_node.children().next().unwrap();
-    /// assert_eq!(format!("{}", bar_node.value()), "bar\t1");
+    /// assert_eq!(format!("{}", bar_node.value()), "bar 1");
     /// ```
     fn value(&self) -> impl fmt::Display {
         if self.fragment.is_empty() {
@@ -453,8 +453,8 @@ impl Node for Trie {
         }
         match self.display_data {
             DisplayData::None => self.fragment.to_string(),
-            DisplayData::DirectCount => format!("{}\t{}", &self.fragment, self.count),
-            DisplayData::TotalCount => format!("{}\t{}", &self.fragment, self.descendents_count),
+            DisplayData::DirectCount => format!("{} {}", &self.fragment, self.count),
+            DisplayData::TotalCount => format!("{} {}", &self.fragment, self.descendents_count),
         }
     }
 
@@ -472,13 +472,13 @@ impl Node for Trie {
     /// assert_eq!(format!("{}", root.value()), "");
     ///
     /// let b_node = root.children().next().unwrap();
-    /// assert_eq!(format!("{}", b_node.value()), "b\t0");
+    /// assert_eq!(format!("{}", b_node.value()), "b 0");
     ///
     /// let ba_node = b_node.children().next().unwrap();
-    /// assert_eq!(format!("{}", ba_node.value()), "ba\t0");
+    /// assert_eq!(format!("{}", ba_node.value()), "ba 0");
     ///
     /// let bar_node = ba_node.children().next().unwrap();
-    /// assert_eq!(format!("{}", bar_node.value()), "bar\t1");
+    /// assert_eq!(format!("{}", bar_node.value()), "bar 1");
     /// ```
     fn children(&self) -> impl Iterator<Item = &Self> {
         // To make all return types the same, and allow the trait to keep using an impl instead of
