@@ -12,25 +12,72 @@ pub struct Trie {
     descendents_count: usize,
     // The nodes of other words which begin with this node's fragment.
     children: BTreeMap<char, Trie>,
+    // The sort option defines the order in which child nodes will be returned by [Self::children].
+    sort_option: SortOption,
+    // The display data defines what additional data is displayed by the [Self::value] method.
+    display_data: DisplayData,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum SortOption {
+    /// Sort children by their value.
+    Value,
+    /// Sort children by their value, reversed.
+    ValueReversed,
+    /// Sort children by the number of times they directly occur, from least to greatest.
+    DirectCountAscending,
+    /// Sort children by the number of times they directly occur, from greatest to least.
+    DirectCountDescending,
+    /// Sort children by the number of times they or any descendent of theirs occurs, from least to
+    /// greatest.
+    TotalCountAscending,
+    /// Sort children by the number of times they or any descendent of theirs occurs, from greatest
+    /// to least.
+    TotalCountDescending,
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum DisplayData {
+    /// Display no additional data along with the word fragment.
+    None,
+    /// Display the number of times exactly this word has occurred.
+    DirectCount,
+    /// Display the number of times this word fragment or any descendent of it has occurred.
+    TotalCount,
 }
 
 impl Trie {
-    /// Returns an empty [Trie].
+    /// Returns an empty [Trie] which will sort entries by value and display the number of times
+    /// the node has occurred as part of the value.
     pub fn new() -> Self {
-        Self::new_with_fragment(String::new())
+        Self::new_with_fragment(String::new(), SortOption::Value, DisplayData::DirectCount)
     }
 
-    /// Returns a new [Trie] node with the given word fragment and a count of `0`.
-    fn new_with_fragment(fragment: String) -> Self {
+    /// Returns an empty [Trie] which will sort entries by the given [SortOption] and display
+    /// values according to the given [DisplayData].
+    pub fn with_sort_and_display(sort_option: SortOption, display_data: DisplayData) -> Self {
+        Self::new_with_fragment(String::new(), sort_option, display_data)
+    }
+
+    /// Returns a new [Trie] node with the given word fragment and a count of `0`, and with the
+    /// given [SortOption] and [DisplayData].
+    fn new_with_fragment(
+        fragment: String,
+        sort_option: SortOption,
+        display_data: DisplayData,
+    ) -> Self {
         Trie {
             fragment,
             count: 0,
             descendents_count: 0,
             children: BTreeMap::new(),
+            sort_option,
+            display_data,
         }
     }
 
-    /// Returns a new [Trie] populated with the given words.
+    /// Returns a new [Trie] populated with the given words, with children sorted lexigraphically
+    /// and displaying word counts in the value.
     ///
     /// # Examples
     ///
@@ -50,10 +97,182 @@ impl Trie {
     ///         └── foo\t3");
     /// ```
     pub fn from<'a>(words: impl IntoIterator<Item = &'a str>) -> Self {
-        words.into_iter().fold(Self::new(), |mut acc, w| {
-            acc.add(w.to_string()).unwrap(); // error cannot occur
-            acc
-        })
+        Self::new().populate(words)
+    }
+
+    /// Returns a new [Trie] populated with the given words, with children according to the given
+    /// [SortOption] and supplementary data displayed according to the given [DisplayData].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use simple_tree::implementations::trie::{DisplayData, SortOption, Trie};
+    /// use simple_tree::Node;
+    ///
+    /// let trie = Trie::from_with_sort_and_display(vec!["foo", "bar", "baz", "foo", "baz", "foo", "b"], SortOption::TotalCountDescending, DisplayData::TotalCount);
+    ///
+    /// assert_eq!(format!("{}", trie), "
+    /// ├── b\t4
+    /// │   └── ba\t3
+    /// │       ├── baz\t2
+    /// │       └── bar\t1
+    /// └── f\t3
+    ///     └── fo\t3
+    ///         └── foo\t3");
+    /// ```
+    pub fn from_with_sort_and_display<'a>(
+        words: impl IntoIterator<Item = &'a str>,
+        sort_option: SortOption,
+        display_data: DisplayData,
+    ) -> Self {
+        Self::with_sort_and_display(sort_option, display_data).populate(words)
+    }
+
+    /// Populates the given [Trie] with the given words, then returns it.
+    fn populate<'a>(mut self, words: impl IntoIterator<Item = &'a str>) -> Self {
+        words.into_iter().for_each(|w| {
+            self.add(w.to_string()).unwrap();
+        });
+        self
+    }
+
+    /// Set the sort option for this [Trie] node and all of its descendents to the given
+    /// [SortOption].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use simple_tree::implementations::trie::{DisplayData, SortOption, Trie};
+    /// use simple_tree::Node;
+    ///
+    /// let mut trie = Trie::from_with_sort_and_display(
+    ///     vec!["hey", "hello", "hey", "hi", "ha", "ha"],
+    ///     SortOption::Value,
+    ///     DisplayData::DirectCount,
+    /// );
+    /// assert_eq!(format!("{}", trie), "
+    /// └── h\t0
+    ///     ├── ha\t2
+    ///     ├── he\t0
+    ///     │   ├── hel\t0
+    ///     │   │   └── hell\t0
+    ///     │   │       └── hello\t1
+    ///     │   └── hey\t2
+    ///     └── hi\t1");
+    ///
+    /// trie.set_sort_option(SortOption::ValueReversed);
+    /// assert_eq!(format!("{}", trie), "
+    /// └── h\t0
+    ///     ├── hi\t1
+    ///     ├── he\t0
+    ///     │   ├── hey\t2
+    ///     │   └── hel\t0
+    ///     │       └── hell\t0
+    ///     │           └── hello\t1
+    ///     └── ha\t2");
+    ///
+    /// trie.set_sort_option(SortOption::DirectCountAscending);
+    /// assert_eq!(format!("{}", trie), "
+    /// └── h\t0
+    ///     ├── he\t0
+    ///     │   ├── hel\t0
+    ///     │   │   └── hell\t0
+    ///     │   │       └── hello\t1
+    ///     │   └── hey\t2
+    ///     ├── hi\t1
+    ///     └── ha\t2");
+    ///
+    /// trie.set_sort_option(SortOption::DirectCountDescending);
+    /// assert_eq!(format!("{}", trie), "
+    /// └── h\t0
+    ///     ├── ha\t2
+    ///     ├── hi\t1
+    ///     └── he\t0
+    ///         ├── hey\t2
+    ///         └── hel\t0
+    ///             └── hell\t0
+    ///                 └── hello\t1");
+    ///
+    /// trie.set_sort_option(SortOption::TotalCountAscending);
+    /// assert_eq!(format!("{}", trie), "
+    /// └── h\t0
+    ///     ├── hi\t1
+    ///     ├── ha\t2
+    ///     └── he\t0
+    ///         ├── hel\t0
+    ///         │   └── hell\t0
+    ///         │       └── hello\t1
+    ///         └── hey\t2");
+    ///
+    /// trie.set_sort_option(SortOption::TotalCountDescending);
+    /// assert_eq!(format!("{}", trie), "
+    /// └── h\t0
+    ///     ├── he\t0
+    ///     │   ├── hey\t2
+    ///     │   └── hel\t0
+    ///     │       └── hell\t0
+    ///     │           └── hello\t1
+    ///     ├── ha\t2
+    ///     └── hi\t1");
+    /// ```
+    pub fn set_sort_option(&mut self, sort_option: SortOption) {
+        self.sort_option = sort_option;
+        self.children
+            .values_mut()
+            .for_each(|c| c.set_sort_option(sort_option))
+    }
+
+    /// Set the display data for this [Trie] node and all of its descendents to the given
+    /// [DisplayData].
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use simple_tree::implementations::trie::{DisplayData, SortOption, Trie};
+    /// use simple_tree::Node;
+    ///
+    /// let mut trie = Trie::from_with_sort_and_display(
+    ///     vec!["hey", "hello", "hey", "hi", "ha", "ha"],
+    ///     SortOption::Value,
+    ///     DisplayData::None,
+    /// );
+    /// assert_eq!(format!("{}", trie), "
+    /// └── h
+    ///     ├── ha
+    ///     ├── he
+    ///     │   ├── hel
+    ///     │   │   └── hell
+    ///     │   │       └── hello
+    ///     │   └── hey
+    ///     └── hi");
+    ///
+    /// trie.set_display_data(DisplayData::DirectCount);
+    /// assert_eq!(format!("{}", trie), "
+    /// └── h\t0
+    ///     ├── ha\t2
+    ///     ├── he\t0
+    ///     │   ├── hel\t0
+    ///     │   │   └── hell\t0
+    ///     │   │       └── hello\t1
+    ///     │   └── hey\t2
+    ///     └── hi\t1");
+    ///
+    /// trie.set_display_data(DisplayData::TotalCount);
+    /// assert_eq!(format!("{}", trie), "
+    /// └── h\t6
+    ///     ├── ha\t2
+    ///     ├── he\t3
+    ///     │   ├── hel\t1
+    ///     │   │   └── hell\t1
+    ///     │   │       └── hello\t1
+    ///     │   └── hey\t2
+    ///     └── hi\t1");
+    /// ```
+    pub fn set_display_data(&mut self, display_data: DisplayData) {
+        self.display_data = display_data;
+        self.children
+            .values_mut()
+            .for_each(|c| c.set_display_data(display_data))
     }
 
     /// Returns the next `char` in the given word following `self.fragment`, if it exists.
@@ -193,7 +412,13 @@ impl Trie {
         Ok(self
             .children
             .entry(next_char)
-            .or_insert_with(|| Self::new_with_fragment(word[..self.fragment.len() + 1].to_string()))
+            .or_insert_with(|| {
+                Self::new_with_fragment(
+                    word[..self.fragment.len() + 1].to_string(),
+                    self.sort_option,
+                    self.display_data,
+                )
+            })
             .add(word)
             .unwrap())
     }
@@ -226,7 +451,11 @@ impl Node for Trie {
         if self.fragment.is_empty() {
             return String::new();
         }
-        format!("{}\t{}", &self.fragment, self.count)
+        match self.display_data {
+            DisplayData::None => self.fragment.to_string(),
+            DisplayData::DirectCount => format!("{}\t{}", &self.fragment, self.count),
+            DisplayData::TotalCount => format!("{}\t{}", &self.fragment, self.descendents_count),
+        }
     }
 
     /// Returns an iterator over the [Trie] nodes whose
@@ -252,7 +481,34 @@ impl Node for Trie {
     /// assert_eq!(format!("{}", bar_node.value()), "bar\t1");
     /// ```
     fn children(&self) -> impl Iterator<Item = &Self> {
-        self.children.values()
+        // To make all return types the same, and allow the trait to keep using an impl instead of
+        // Box<dyn ...>, collect into a vec and then return it as an iterator.
+        match self.sort_option {
+            SortOption::Value => self.children.values().collect::<Vec<_>>().into_iter(),
+            SortOption::ValueReversed => {
+                self.children.values().rev().collect::<Vec<_>>().into_iter()
+            }
+            SortOption::DirectCountAscending => {
+                let mut result = self.children.values().collect::<Vec<_>>();
+                result.sort_by(|&a, &b| a.count.cmp(&b.count));
+                result.into_iter()
+            }
+            SortOption::DirectCountDescending => {
+                let mut result = self.children.values().collect::<Vec<_>>();
+                result.sort_by(|&a, &b| b.count.cmp(&a.count));
+                result.into_iter()
+            }
+            SortOption::TotalCountAscending => {
+                let mut result = self.children.values().collect::<Vec<_>>();
+                result.sort_by(|&a, &b| a.descendents_count.cmp(&b.descendents_count));
+                result.into_iter()
+            }
+            SortOption::TotalCountDescending => {
+                let mut result = self.children.values().collect::<Vec<_>>();
+                result.sort_by(|&a, &b| b.descendents_count.cmp(&a.descendents_count));
+                result.into_iter()
+            }
+        }
     }
 }
 
